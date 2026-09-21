@@ -1,0 +1,7 @@
+Alertas de Data Drift
+=====================
+
+1. Se detectó data drift en 15 de 20 variables monitorizadas.
+2. Variables con nivel de drift alto: tendencia_ingresos, promedio_ingresos_datacredito.
+3. Variables con KS significativo: promedio_ingresos_datacredito.
+4. Variables categóricas con Chi-cuadrado significativo: tendencia_ingresos, tipo_credito, tipo_laboral.
