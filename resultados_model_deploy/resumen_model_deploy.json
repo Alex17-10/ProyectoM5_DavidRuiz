@@ -1,0 +1,24 @@
+{
+    "fecha_ejecucion": "2026-09-16 18:39:12",
+    "modelo_utilizado": "modelo_final.joblib",
+    "preprocesador_utilizado": "pipeline_preprocesamiento.joblib",
+    "archivo_datos": "Base_de_datos_preparada.csv",
+    "cantidad_registros": 10763,
+    "cantidad_columnas_originales": 30,
+    "cantidad_caracteristicas_entrada": 31,
+    "cantidad_caracteristicas_transformadas": 39,
+    "predicciones_clase_0": 1732,
+    "porcentaje_predicciones_clase_0": 16.09,
+    "predicciones_clase_1": 9031,
+    "porcentaje_predicciones_clase_1": 83.91,
+    "metricas": {
+        "accuracy": 0.8269,
+        "balanced_accuracy": 0.6107,
+        "precision_clase_0": 0.1097,
+        "recall_clase_0": 0.3718,
+        "f1_clase_0": 0.1694,
+        "precision_clase_1": 0.9645,
+        "recall_clase_1": 0.8496,
+        "f1_clase_1": 0.9034
+    }
+}

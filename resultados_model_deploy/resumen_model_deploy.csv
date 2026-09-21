@@ -1,0 +1,14 @@
+﻿Indicador,Valor
+Registros procesados,10763
+Características de entrada,31
+Características transformadas,39
+Predicciones clase 0,1732
+Porcentaje predicciones clase 0,16.09%
+Predicciones clase 1,9031
+Porcentaje predicciones clase 1,83.91%
+Accuracy,0.8269
+Balanced Accuracy,0.6107
+Recall clase 0,0.3718
+F1 clase 0,0.1694
+Recall clase 1,0.8496
+F1 clase 1,0.9034

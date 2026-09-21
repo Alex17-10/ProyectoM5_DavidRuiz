@@ -1,0 +1,35 @@
+REPORTE MODEL DEPLOY
+============================================================
+
+Fecha de ejecución: 2026-09-16 18:39:12
+Modelo utilizado: modelo_final.joblib
+Preprocesador utilizado: pipeline_preprocesamiento.joblib
+Archivo de datos: Base_de_datos_preparada.csv
+
+DATOS PROCESADOS
+------------------------------------------------------------
+Registros procesados: 10763
+Características de entrada: 31
+Características transformadas: 39
+
+DISTRIBUCIÓN DE LAS PREDICCIONES
+------------------------------------------------------------
+Clase 0 - Posible incumplimiento: 1732 (16.09%)
+Clase 1 - Pago a tiempo: 9031 (83.91%)
+
+MÉTRICAS
+------------------------------------------------------------
+accuracy: 0.8269
+balanced_accuracy: 0.6107
+precision_clase_0: 0.1097
+recall_clase_0: 0.3718
+f1_clase_0: 0.1694
+precision_clase_1: 0.9645
+recall_clase_1: 0.8496
+f1_clase_1: 0.9034
+
+MATRIZ DE CONFUSIÓN
+------------------------------------------------------------
+        Predicho 0  Predicho 1
+Real 0         190         321
+Real 1        1542        8710

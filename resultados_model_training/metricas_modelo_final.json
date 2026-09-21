@@ -1,0 +1,34 @@
+{
+    "modelo_final": "Balanced_Random_Forest",
+    "umbral_final": 0.5799999999999997,
+    "metricas_estandar": {
+        "accuracy": 0.8276823037621923,
+        "balanced_accuracy": 0.5788257282435159,
+        "precision_clase_0": 0.09365558912386707,
+        "recall_clase_0": 0.30392156862745096,
+        "f1_clase_0": 0.14318706697459585,
+        "precision_clase_1": 0.9610318331503842,
+        "recall_clase_1": 0.8537298878595807,
+        "f1_clase_1": 0.9042086238058352,
+        "precision_macro": 0.5273437111371256,
+        "recall_macro": 0.5788257282435159,
+        "f1_macro": 0.5236978453902156,
+        "roc_auc": 0.6786407395722794,
+        "pr_auc": 0.9756404438498982
+    },
+    "metricas_umbral": {
+        "accuracy": 0.6539712029725964,
+        "balanced_accuracy": 0.6320541868624583,
+        "precision_clase_0": 0.08083441981747067,
+        "recall_clase_0": 0.6078431372549019,
+        "f1_clase_0": 0.142692750287687,
+        "precision_clase_1": 0.9711399711399712,
+        "recall_clase_1": 0.6562652364700147,
+        "f1_clase_1": 0.7832411987198138,
+        "precision_macro": 0.525987195478721,
+        "recall_macro": 0.6320541868624583,
+        "f1_macro": 0.4629669745037504,
+        "roc_auc": 0.6786407395722794,
+        "pr_auc": 0.9756404438498982
+    }
+}
