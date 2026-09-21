@@ -1,0 +1,13 @@
+﻿variable,categoria,cantidad,porcentaje
+tipo_credito,4,7747,71.97807302796619
+tipo_credito,9,2876,26.721174393756385
+tipo_credito,10,116,1.0777664220013008
+tipo_credito,6,21,0.19511288674161478
+tipo_credito,7,2,0.0185821796896776
+tipo_credito,68,1,0.0092910898448388
+tipo_laboral,Empleado,6754,62.75202081204125
+tipo_laboral,Independiente,4009,37.24797918795875
+tendencia_ingresos,Creciente,5294,49.187029638576604
+tendencia_ingresos,Nulo,2990,27.78035863606801
+tendencia_ingresos,Decreciente,1291,11.99479698968689
+tendencia_ingresos,Estable,1188,11.037814735668494

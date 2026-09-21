@@ -1,0 +1,23 @@
+﻿variable,categoria,target,cantidad,total_categoria,porcentaje_dentro_categoria
+tipo_credito,10,No paga a tiempo,3,116,2.586206896551724
+tipo_credito,10,Paga a tiempo,113,116,97.41379310344827
+tipo_credito,4,No paga a tiempo,363,7747,4.6856847812056275
+tipo_credito,4,Paga a tiempo,7384,7747,95.31431521879438
+tipo_credito,6,No paga a tiempo,9,21,42.857142857142854
+tipo_credito,6,Paga a tiempo,12,21,57.14285714285714
+tipo_credito,68,Paga a tiempo,1,1,100.0
+tipo_credito,7,Paga a tiempo,2,2,100.0
+tipo_credito,9,No paga a tiempo,136,2876,4.728789986091794
+tipo_credito,9,Paga a tiempo,2740,2876,95.2712100139082
+tipo_laboral,Empleado,No paga a tiempo,290,6754,4.293751850755108
+tipo_laboral,Empleado,Paga a tiempo,6464,6754,95.70624814924489
+tipo_laboral,Independiente,No paga a tiempo,221,4009,5.512596657520579
+tipo_laboral,Independiente,Paga a tiempo,3788,4009,94.48740334247942
+tendencia_ingresos,Creciente,No paga a tiempo,207,5294,3.910086890819796
+tendencia_ingresos,Creciente,Paga a tiempo,5087,5294,96.0899131091802
+tendencia_ingresos,Decreciente,No paga a tiempo,81,1291,6.27420604182804
+tendencia_ingresos,Decreciente,Paga a tiempo,1210,1291,93.72579395817195
+tendencia_ingresos,Estable,No paga a tiempo,55,1188,4.62962962962963
+tendencia_ingresos,Estable,Paga a tiempo,1133,1188,95.37037037037037
+tendencia_ingresos,Nulo,No paga a tiempo,168,2990,5.618729096989967
+tendencia_ingresos,Nulo,Paga a tiempo,2822,2990,94.38127090301003

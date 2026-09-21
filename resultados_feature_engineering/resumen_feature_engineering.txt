@@ -1,0 +1,59 @@
+RESUMEN DE INGENIERÍA DE CARACTERÍSTICAS
+
+Archivo de entrada: C:\Users\Alex\OneDrive\Desktop\Proyectos\ProyectoM5\Base_de_datos_preparada.csv
+Registros originales: 10,763
+Columnas después de preparación: 33
+Variable objetivo: Pago_atiempo
+Registros de entrenamiento: 8,610
+Registros de prueba: 2,153
+Características finales: 39
+Porcentaje de prueba: 20%
+Semilla aleatoria: 42
+
+VARIABLES NUMÉRICAS
+- capital_prestado
+- plazo_meses
+- edad_cliente
+- salario_cliente
+- total_otros_prestamos
+- cuota_pactada
+- puntaje_datacredito
+- cant_creditosvigentes
+- huella_consulta
+- saldo_mora
+- saldo_total
+- saldo_principal
+- saldo_mora_codeudor
+- creditos_sectorFinanciero
+- creditos_sectorCooperativo
+- creditos_sectorReal
+- promedio_ingresos_datacredito
+- anio_prestamo
+- mes_prestamo
+- dia_semana_prestamo
+- hora_prestamo
+- relacion_cuota_salario
+- relacion_deuda_salario
+- saldo_pendiente_estimado
+- dia_prestamo
+- semana_anio_prestamo
+- trimestre_prestamo
+- es_fin_semana
+
+VARIABLES CATEGÓRICAS
+- tipo_credito
+- tipo_laboral
+- tendencia_ingresos
+
+TRANSFORMACIONES APLICADAS
+- Imputación numérica mediante la mediana
+- Estandarización de variables numéricas
+- Imputación categórica mediante la moda
+- Codificación OneHotEncoder
+- Manejo de categorías desconocidas
+- División estratificada entre entrenamiento y prueba
+- Ajuste del preprocesador únicamente con entrenamiento
+
+VARIABLES EXCLUIDAS
+- Pago_atiempo: variable objetivo
+- puntaje: excluida por posible fuga de información

@@ -1,0 +1,132 @@
+REPORTE DE ANÁLISIS EXPLORATORIO DE DATOS
+Proyecto de análisis de créditos
+
+1. RESUMEN GENERAL
+╒═══════════════════════════╤═════════╕
+│ indicador                 │ valor   │
+╞═══════════════════════════╪═════════╡
+│ Registros                 │ 10.763  │
+├───────────────────────────┼─────────┤
+│ Columnas                  │ 30      │
+├───────────────────────────┼─────────┤
+│ Celdas totales            │ 322.890 │
+├───────────────────────────┼─────────┤
+│ Valores nulos             │ 7.996   │
+├───────────────────────────┼─────────┤
+│ Porcentaje total de nulos │ 2,48%   │
+├───────────────────────────┼─────────┤
+│ Variables numéricas       │ 26      │
+├───────────────────────────┼─────────┤
+│ Variables categóricas     │ 3       │
+├───────────────────────────┼─────────┤
+│ Variables de fecha        │ 1       │
+╘═══════════════════════════╧═════════╛
+
+2. CALIDAD DE LOS DATOS
+╒═══════════════════════════════╤════════════════╤═════════════╤═════════════════╤════════════════════╤══════════════════╤═════════════════════╕
+│ variable                      │ tipo_dato      │   registros │   valores_nulos │ porcentaje_nulos   │   valores_unicos │ porcentaje_unicos   │
+╞═══════════════════════════════╪════════════════╪═════════════╪═════════════════╪════════════════════╪══════════════════╪═════════════════════╡
+│ tendencia_ingresos            │ string         │      10.763 │            2.99 │ 27,78%             │            3     │ 0,03%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ promedio_ingresos_datacredito │ float64        │      10.763 │            2.93 │ 27,22%             │            5.309 │ 49,33%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ saldo_mora_codeudor           │ float64        │      10.763 │          590    │ 5,48%              │            4     │ 0,04%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ saldo_principal               │ float64        │      10.763 │          405    │ 3,76%              │            8.647 │ 80,34%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ saldo_pendiente_estimado      │ float64        │      10.763 │          405    │ 3,76%              │            1.658 │ 15,40%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ saldo_mora                    │ float64        │      10.763 │          156    │ 1,45%              │           55     │ 0,51%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ saldo_total                   │ float64        │      10.763 │          156    │ 1,45%              │            8.858 │ 82,30%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ edad_cliente                  │ float64        │      10.763 │          150    │ 1,39%              │           51     │ 0,47%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ puntaje                       │ float64        │      10.763 │          135    │ 1,25%              │          202     │ 1,88%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ relacion_cuota_salario        │ float64        │      10.763 │           24    │ 0,22%              │           10.447 │ 97,06%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ relacion_deuda_salario        │ float64        │      10.763 │           24    │ 0,22%              │            9.868 │ 91,68%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ salario_cliente               │ float64        │      10.763 │           24    │ 0,22%              │            1.384 │ 12,86%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ puntaje_datacredito           │ float64        │      10.763 │            7    │ 0,07%              │          314     │ 2,92%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ tipo_credito                  │ string         │      10.763 │            0    │ 0,00%              │            6     │ 0,06%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ huella_consulta               │ float64        │      10.763 │            0    │ 0,00%              │           28     │ 0,26%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ cant_creditosvigentes         │ float64        │      10.763 │            0    │ 0,00%              │           39     │ 0,36%               │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ total_otros_prestamos         │ float64        │      10.763 │            0    │ 0,00%              │            1.538 │ 14,29%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ cuota_pactada                 │ float64        │      10.763 │            0    │ 0,00%              │            9.836 │ 91,39%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ fecha_prestamo                │ datetime64[us] │      10.763 │            0    │ 0,00%              │           10.444 │ 97,04%              │
+├───────────────────────────────┼────────────────┼─────────────┼─────────────────┼────────────────────┼──────────────────┼─────────────────────┤
+│ capital_prestado              │ float64        │      10.763 │            0    │ 0,00%              │            7.306 │ 67,88%              │
+╘═══════════════════════════════╧════════════════╧═════════════╧═════════════════╧════════════════════╧══════════════════╧═════════════════════╛
+
+3. DISTRIBUCIÓN DE LA VARIABLE OBJETIVO
+╒══════════════════╤════════════╤══════════════╕
+│ categoria        │   cantidad │ porcentaje   │
+╞══════════════════╪════════════╪══════════════╡
+│ No paga a tiempo │    511     │ 4,75%        │
+├──────────────────┼────────────┼──────────────┤
+│ Paga a tiempo    │     10.252 │ 95,25%       │
+╘══════════════════╧════════════╧══════════════╛
+
+4. CORRELACIONES CON LA VARIABLE OBJETIVO
+╒═══════════════════════════════╤══════════════════════════╤════════════════════════╕
+│ variable                      │ correlacion_con_target   │ correlacion_absoluta   │
+╞═══════════════════════════════╪══════════════════════════╪════════════════════════╡
+│ puntaje                       │ 0,9257                   │ 0,9257                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ huella_consulta               │ -0,0737                  │ 0,0737                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ saldo_mora                    │ -0,0735                  │ 0,0735                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ puntaje_datacredito           │ 0,0682                   │ 0,0682                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ plazo_meses                   │ -0,0631                  │ 0,0631                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ edad_cliente                  │ 0,0528                   │ 0,0528                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ capital_prestado              │ -0,0406                  │ 0,0406                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ promedio_ingresos_datacredito │ 0,0399                   │ 0,0399                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ dia_semana_prestamo           │ -0,0335                  │ 0,0335                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ hora_prestamo                 │ 0,0270                   │ 0,0270                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ creditos_sectorReal           │ -0,0233                  │ 0,0233                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ creditos_sectorFinanciero     │ 0,0214                   │ 0,0214                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ creditos_sectorCooperativo    │ 0,0213                   │ 0,0213                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ anio_prestamo                 │ 0,0203                   │ 0,0203                 │
+├───────────────────────────────┼──────────────────────────┼────────────────────────┤
+│ saldo_total                   │ 0,0144                   │ 0,0144                 │
+╘═══════════════════════════════╧══════════════════════════╧════════════════════════╛
+
+5. HALLAZGOS PRINCIPALES
+1. La variable objetivo presenta un desbalance importante: 10.252 registros corresponden a pagos a tiempo (95,25%) y 511 corresponden a pagos fuera de tiempo (4,75%).
+2. Debido al desbalance del target, en una etapa posterior de modelado no se debería utilizar únicamente la exactitud como métrica de evaluación. También deberían considerarse precision, recall, F1-score, matriz de confusión y ROC-AUC.
+3. Las variables con mayor proporción de valores nulos son: tendencia_ingresos (27,78%), promedio_ingresos_datacredito (27,22%), saldo_mora_codeudor (5,48%), saldo_principal (3,76%), saldo_pendiente_estimado (3,76%).
+4. Los valores nulos deben tratarse dentro del pipeline de preprocesamiento del modelo. La estrategia dependerá del tipo de variable y del significado de los datos faltantes.
+5. Las variables con mayor correlación absoluta con Pago_atiempo son: puntaje (0,9257), huella_consulta (-0,0737), saldo_mora (-0,0735), puntaje_datacredito (0,0682), plazo_meses (-0,0631).
+6. Se observa al menos una correlación muy elevada entre una variable numérica y Pago_atiempo. La variable puntaje presenta una correlación de 0,9257. Esta relación debe revisarse para descartar fuga de información o variables construidas utilizando datos posteriores al momento de otorgamiento del crédito.
+7. La variable relacion_cuota_salario permite identificar 11 registros en los que la cuota mensual supera el ingreso utilizado en el cálculo. Estos casos deben revisarse desde el punto de vista financiero y de calidad de datos.
+8. La variable relacion_deuda_salario presenta 5.419 registros con valores superiores a 1. Esto indica que la deuda supera el ingreso considerado y puede representar una señal de presión financiera.
+9. Las variables financieras pueden presentar asimetría y valores atípicos. En esta etapa exploratoria no se eliminaron ni modificaron estos registros, ya que primero debe determinarse si representan errores o situaciones reales.
+10. tipo_credito debe tratarse como una variable categórica nominal si sus valores representan categorías de crédito. No debe interpretarse automáticamente como una escala numérica.
+11. Los resultados del EDA son descriptivos y no permiten afirmar causalidad. Las relaciones encontradas deben validarse durante la preparación del modelo y mediante pruebas estadísticas o técnicas de validación adicionales.
+
+6. ARCHIVOS GENERADOS
+Se generaron tablas en formato CSV, un reporte consolidado en Excel, un reporte de texto y gráficos dentro de la carpeta 'graficos'.
+
+7. CONSIDERACIONES METODOLÓGICAS
+El análisis exploratorio no elimina automáticamente valores atípicos ni realiza imputaciones definitivas. Estas decisiones deben establecerse posteriormente dentro del pipeline de preprocesamiento y modelado.
+
