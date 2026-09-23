@@ -1,665 +1,566 @@
-[README.md](https://github.com/user-attachments/files/32489016/README.md)
-# PROYECTO - PREDICCION DE INCUMPLIMIENTO DE CREDITOS
+# Predicción de Incumplimiento de Créditos
 
-> Documentación técnica del proyecto de Machine Learning para predicción de incumplimiento de créditos.
+*Proyecto Integrador*
 
-## Descripción general del proyecto
+Proyecto de Ciencia de Datos end-to-end desarrollado para el equipo de Datos y Analítica de una entidad financiera. Un Científico de Datos Junior Advanced construye, despliega y monitorea un modelo predictivo que, a partir del historial crediticio, anticipa si un cliente nuevo pagará a tiempo o incurrirá en incumplimiento.
 
-Has iniciado tu labor en el equipo de Datos y Analítica de una empresa financiera,
-desempeñándote como Científico de Datos Junior Advanced. Tu primera asignación
-consiste en desarrollar un modelo predictivo mediante técnicas de aprendizaje automático,
-utilizando información histórica de créditos, con el objetivo de anticipar el comportamiento
-de nuevos usuarios.
-La empresa opera bajo un esquema estructurado de proyectos, en el cual cada iniciativa
-debe seguir una arquitectura de carpetas estrictamente definida. Esta estructura no puede
-ser modificada, ya que los procesos de despliegue a producción están automatizados a
-través de pipelines de validación en Jenkins. Cualquier alteración en la organización de
-carpetas podría generar retrasos significativos en el paso a producción.
-La variable objetivo utilizada en el proyecto es Pago_atiempo. La clasificación utilizada por
-los scripts interpreta la clase 0 como posible incumplimiento y la clase 1 como pago a
-tiempo. El problema presenta una distribución de clases desbalanceada, por lo que el
-análisis no debe depender únicamente de Accuracy.
+El repositorio cubre el ciclo de MLOps completo: calidad y preparación de datos, EDA, ingeniería de características, entrenamiento y selección de modelo, despliegue como API (FastAPI + Docker), envío de predicciones, monitoreo de data drift y un tablero de visualización en Streamlit.
 
-## Flujo general
+---
 
-Etapa       Script principal           Entrada principal           Resultado principal
+## Tabla de contenido
 
-Preparació                                                         Base_de_datos_prepara
-              Cargar_datos.py          Base_de_datos.csv
-n y calidad                                                        da.csv
+0. [Ejecución rápida (paso a paso)](#ejecución-rápida-paso-a-paso)
+1. [Descripción general y caso de negocio](#descripción-general-y-caso-de-negocio)
+2. [Flujo general del proyecto](#flujo-general-del-proyecto)
+3. [Arquitectura y estructura de carpetas](#arquitectura-y-estructura-de-carpetas)
+4. [Datos de entrada y preparación — Cargar_datos.py](#datos-de-entrada-y-preparación--cargar_datospy)
+5. [Análisis exploratorio de datos (EDA) — Comprension_eda.py](#análisis-exploratorio-de-datos-eda--comprension_edapy)
+6. [Ingeniería de características — ft_engineering.py](#ingeniería-de-características--ft_engineeringpy)
+7. [Entrenamiento y evaluación de modelos — model_training_evaluation.py](#entrenamiento-y-evaluación-de-modelos--model_training_evaluationpy)
+8. [Model Deployment — model_deploy.py](#model-deployment--model_deploypy)
+9. [API de predicción (FastAPI) — API.py](#api-de-predicción-fastapi--apipy)
+10. [Envío de registros a la API — enviar_predicciones_API.py](#envío-de-registros-a-la-api--enviar_predicciones_apipy)
+11. [Model Monitoring y Data Drift — model_monitoring.py](#model-monitoring-y-data-drift--model_monitoringpy)
+12. [Aplicación de Streamlit — APP.py](#aplicación-de-streamlit--apppy)
+13. [Consideraciones metodológicas](#consideraciones-metodológicas)
+14. [Contenerización con Docker](#contenerización-con-docker)
+15. [Versionamiento con Git y GitHub](#versionamiento-con-git-y-github)
+16. [Stack tecnológico](#stack-tecnológico)
+17. [Conclusión](#conclusión)
 
-                                       Base_de_datos_prepara Reporte EDA, CSV y 10
-EDA           Comprension_eda.py
-                                       da.csv                gráficos
+## Ejecución rápida (paso a paso)
 
-Feature
-                                       Base_de_datos_prepara Train/test transformados
-Engineerin    ft_engineering.py
-                                       da.csv                y pipeline
-g
+*Guía de referencia para revisión del proyecto. El detalle de cada etapa está desarrollado en las secciones siguientes.*
 
-Entrenamie model_training_evalua                                   Modelos evaluados y
-                                       Train/test transformados
-nto        tion.py                                                 modelo_final.joblib
+**Regla fundamental:** todos los scripts deben permanecer en la carpeta raíz del proyecto (junto con los archivos/carpetas que consumen) y ejecutarse desde esa carpeta. Las rutas se construyen de forma relativa a la ubicación del propio script, por lo que moverlo, renombrar artefactos o ejecutarlo desde otra ubicación produce errores de archivo no encontrado. La carpeta raíz puede vivir en cualquier ruta del computador; lo único que debe conservarse es la estructura interna.
 
-Deploymen                              Modelo + pipeline +
-          model_deploy.py                                          Predicciones y reportes
-t                                      datos
+### Preparación del entorno
 
-Servicio      API.py                   Modelo + pipeline           Endpoints de predicción
-
-Envío a       enviar_predicciones_A                                predicciones_api_monitor
-                                       Base_de_datos.csv
-API           PI.py                                                ing.csv
-
-                                       Base preparada +           Métricas, drift y análisis
-Monitoring   model_monitoring.py
-                                       predicciones API           temporal
-
-                                       Resultados de
-Dashboard    APP.py                                               Interfaz Streamlit
-                                       monitoring
-
-La carpeta raíz del proyecto puede ubicarse en cualquier ruta del computador. Lo que debe
-mantenerse es la estructura interna y la relación entre los archivos. Los scripts construyen
-sus rutas a partir de la ubicación del propio archivo o de rutas relativas; por eso mover un
-script, cambiar nombres de artefactos o ejecutarlo desde una estructura diferente puede
-provocar errores de archivos no encontrados.
-
-## Datos de entrada y preparación
-
-La base original es `Base_de_datos.csv`. En la versión entregada contiene 10.763
-registros y 23 columnas. La variable objetivo `Pago_atiempo` contiene 10.252 registros de
-clase 1 y 511 de clase 0, equivalentes aproximadamente a 95,25% y 4,75%,
-respectivamente.
-Esta distribución es relevante desde el inicio porque el objetivo está desbalanceado. Si se
-observara únicamente el porcentaje global de aciertos, un modelo podría parecer correcto
-aunque tuviera un comportamiento deficiente al identificar la clase minoritaria. Por eso el
-proyecto conserva esta característica durante el análisis y posteriormente utiliza métricas
-por clase y métricas balanceadas.
-
-## ¿Qué hace Cargar_datos.py?
-
-El primer script funciona como una barrera de control de calidad. Lee `Base_de_datos.csv`,
-revisa dimensiones, tipos, valores nulos y duplicados y realiza validaciones específicas
-sobre fechas, edades, variables financieras, puntajes, saldos, categorías y objetivo.
-Cuando encuentra valores claramente inválidos, los convierte en valores nulos en lugar de
-inventar un valor de reemplazo.
-Entre las comprobaciones se encuentran edades fuera del rango 18–100, valores
-negativos en variables donde no son válidos, salarios menores o iguales a cero, cuotas
-superiores al salario, puntajes negativos, saldos inconsistentes, categorías de
-`tendencia_ingresos` fuera de las tres categorías esperadas y valores inválidos de
-`Pago_atiempo`. También se calculan relaciones financieras y se revisan valores extremos
-mediante el criterio del rango intercuartílico.
-El script crea además variables derivadas iniciales: año, mes, día de la semana y hora del
-préstamo; relación cuota/salario; relación deuda/salario; y saldo pendiente estimado. Los
-infinitos se convierten a nulos. Es importante notar que esta etapa no elimina masivamente
-los registros: conserva la estructura de la base y deja los problemas detectados
-preparados para que las siguientes etapas los traten de manera apropiada.
-
-En la base proporcionada se identificaron inicialmente 7.175 valores nulos y 0 filas
-completamente duplicadas. La preparación conserva 10.763 registros. La revisión de la
-base también encontró 150 edades fuera del rango definido, 135 puntajes negativos, 1
-puntaje Datacrédito negativo, 24 salarios menores o iguales a cero, 11 cuotas superiores al
-salario y 58 valores de tendencia fuera de las categorías válidas. Estos valores son
-convertidos o tratados según las reglas del script.
-El resultado directo de esta etapa es `Base_de_datos_preparada.csv` y el resumen
-`Observaciones_calidad_datos.csv`.
-
-## ¿Por qué se hace antes del EDA?
-
-El objetivo es evitar que el análisis exploratorio mezcle datos originales con errores que ya
-sabemos identificar. De esta forma, EDA recibe una versión consistente de la base y puede
-concentrarse en describir distribuciones, relaciones y patrones, en lugar de volver a realizar
-controles básicos de integridad.
-
-## Análisis exploratorio de datos (EDA)
-
-`Comprension_eda.py` toma `Base_de_datos_preparada.csv` y construye un análisis
-exploratorio reproducible. Al comenzar, elimina la carpeta anterior
-`resultados_eda_entrega` y la vuelve a crear, de modo que los resultados de una ejecución
-no se mezclen con archivos antiguos.
-El EDA no busca todavía entrenar el modelo. Su función es entender la estructura de los
-datos, describir variables numéricas y categóricas, revisar el objetivo, estudiar relaciones
-con `Pago_atiempo`, observar correlaciones, detectar comportamientos atípicos y revisar
-la dimensión temporal. La información obtenida aquí ayuda a tomar decisiones posteriores
-de modelado.
-
-## Qué analiza
-
-- Resumen general: registros, columnas, celdas, nulos y clasificación de variables.
-- Calidad de datos por columna y distribución de la variable objetivo.
-- Estadísticas descriptivas y frecuencias de las variables categóricas.
-- Comparación de variables numéricas y categóricas según `Pago_atiempo`.
-- Correlaciones entre variables numéricas y correlación de las variables con el objetivo.
-- Valores extremos y comportamiento temporal de los préstamos.
-
-## Gráficos generados
-
-El script genera exactamente diez gráficos en `resultados_eda_entrega/graficos/`. Estos
-son los nombres reales definidos por el código:
--   01_distribuciones_numericas.png
--   02_boxplots_numericos.png
--   03_distribucion_target.png
--   04_frecuencias_categoricas.png
-
--   05_numericas_por_target.png
--   06_categoricas_por_target.png
--   07_matriz_correlacion.png
--   08_relaciones_financieras.png
--   09_comportamiento_puntajes.png
--   10_comportamiento_temporal.png
-
-Este es el gráfico más directo para mostrar el desbalance del objetivo: 10.252 registros de
-pago a tiempo frente a 511 registros de no pago a tiempo. La gráfica muestra cantidades,
-no probabilidades de futuras predicciones.
-Además de los gráficos, el EDA genera `Reporte_EDA.xlsx`, `Reporte_EDA.txt` y archivos
-CSV como `resumen_inicial.csv`, `resumen_outliers.csv`, `resumen_temporal.csv`,
-`calidad_datos.csv`, `clasificacion_variables.csv`, `distribucion_target.csv`,
-`estadisticas_numericas.csv`, `frecuencias_categoricas.csv`,
-`comparacion_numerica_target.csv`, `comportamiento_categoricas_target.csv`,
-`correlaciones.csv`, `correlaciones_target.csv`, `hallazgos.csv` y `matriz_correlacion.csv`.
-
-## Hallazgos que pasan a la siguiente etapa
-
-El EDA confirma que el objetivo está fuertemente desbalanceado y que existen valores
-faltantes y distribuciones financieras con comportamientos que deben tratarse durante el
-preprocesamiento. También permite identificar variables que requieren cuidado
-metodológico. En particular, `puntaje` se considera posteriormente una variable
-potencialmente problemática por posible fuga de información y se excluye del modelado.
-La correlación, una diferencia entre grupos o una variable con gran importancia posterior
-no debe interpretarse automáticamente como causalidad. El EDA sirve para describir
-relaciones observadas y apoyar decisiones técnicas; no demuestra por sí mismo que una
-variable provoque el incumplimiento.
-
-## Ingeniería de características y preprocesamiento
-
-`ft_engineering.py` toma la base preparada y convierte la información en una
-representación adecuada para entrenar los modelos. Esta etapa es importante porque el
-modelo no debe recibir directamente una mezcla de fechas, texto, valores faltantes y
-escalas financieras diferentes.
-
-## Creación de características
-
-La fecha del préstamo se transforma en variables de año, mes, día, día de la semana,
-semana del año, trimestre, hora y una variable binaria de fin de semana. La fecha original
-se elimina después de extraer estas características.
-También se construyen `relacion_cuota_salario`, `relacion_deuda_salario` y
-`saldo_pendiente_estimado`. Estas variables intentan representar relaciones financieras
-más informativas que una cifra aislada. `tipo_credito` se convierte a variable categórica.
-
-## Separación y prevención de fuga
-
-La variable `Pago_atiempo` se separa como objetivo. `puntaje` se excluye explícitamente
-por su posible fuga de información. La intención es evitar que el modelo aprenda a partir de
-una variable que podría incorporar información relacionada con el resultado que se intenta
-predecir.
-
-## División train/test
-
-El código utiliza `train_test_split` con 80% de los registros para entrenamiento y 20% para
-prueba, `random_state=42` y `stratify=y`. Con 10.763 registros, esto corresponde a 8.610
-registros de entrenamiento y 2.153 de prueba.
-
-## Preprocesamiento
-
-Las variables numéricas pasan por imputación mediante mediana y estandarización con
-`StandardScaler`. Las variables categóricas pasan por imputación con la categoría más
-frecuente y `OneHotEncoder(handle_unknown="ignore")`. El preprocesador se ajusta
-únicamente con entrenamiento y después se aplica al conjunto de prueba. Esto evita que
-información del conjunto de prueba influya en el aprendizaje del preprocesamiento.
-
-En la base preparada, después de separar objetivo, `puntaje` y fecha, quedan 27 variables
-predictoras: 24 numéricas y 3 categóricas. Con la codificación One-Hot de las categorías
-presentes, la representación transformada llega a 35 características.
-Los resultados se guardan en `resultados_feature_engineering`:
-`X_train_transformado.csv`, `X_test_transformado.csv`, `y_train.csv`, `y_test.csv`,
-`pipeline_preprocesamiento.joblib`, `nombres_caracteristicas.csv`,
-`resumen_valores_nulos.csv`, `resumen_variables.csv` y
-`resumen_feature_engineering.txt`.
-
-## Entrenamiento y evaluación de modelos
-
-El entrenamiento recibe los conjuntos ya transformados. La implementación actual utiliza
-tres algoritmos: Regresión Logística, Random Forest y SVM calibrado.
-
-                                Configuración
- Modelo                                                  Función en el proyecto
-                                documentada en el código
-
-                                                               Modelo de referencia para
-                                class_weight='balanced',       comparar el
- Regresión Logística
-                                max_iter=2000                  comportamiento de una
-                                                               técnica lineal.
-
-                                                               Modelo basado en conjunto
-                                300 árboles,
- Random Forest                                                 de árboles para comparar
-                                class_weight='balanced'
-                                                               un enfoque no lineal.
-
-                                                               Modelo de clasificación
-                                SVC balanceado +
-                                                               adicional para comparar
- SVM calibrado                  CalibratedClassifierCV,
-                                                               otra forma de separación de
-                                método sigmoid, cv=3
-                                                               clases.
-
-La configuración `class_weight="balanced"` se utiliza en los modelos que la soportan para
-considerar el desbalance de clases durante el entrenamiento. La SVM base se envuelve en
-`CalibratedClassifierCV`, lo que permite obtener probabilidades para las evaluaciones que
-requieren `predict_proba`.
-
-## ¿Por qué se prueban varios modelos?
-
-No se parte de la idea de que una técnica específica será adecuada de antemano. Los tres
-modelos se entrenan sobre los mismos datos y se evalúan con una estructura común. Esto
-permite observar diferencias de comportamiento y seleccionar el modelo final con criterios
-relacionados con el objetivo del proyecto: detectar registros de la clase 0, que representa
-posibles incumplimientos.
-
-## Métricas utilizadas
-
-El código calcula Accuracy, Balanced Accuracy, ROC-AUC y PR-AUC, además de
-Precision, Recall y F1-score para las clases 0 y 1 y las métricas macro. También genera
-matrices de confusión para los modelos entrenados.
-La validación cruzada utiliza cinco particiones y `F1-score macro` como métrica. Esto
-permite observar el comportamiento del modelo en diferentes particiones del
-entrenamiento en lugar de depender de una sola división.
-
-## Selección del modelo final
-
-La selección no se basa únicamente en Accuracy. El código ordena los modelos por Recall
-de la clase 0, después por F1-score de la clase 0 y finalmente por Balanced Accuracy. El
-primer modelo según ese orden se guarda como `modelo_final.joblib` tanto dentro de la
-carpeta de resultados como en la carpeta raíz del proyecto.
-Este criterio refleja una decisión metodológica concreta: para este problema interesa
-especialmente no perder la capacidad de identificar los registros clasificados como `No
-paga a tiempo`. Las métricas adicionales siguen siendo importantes para entender el
-comportamiento global y el equilibrio entre ambas clases.
-
-## Model Deployment
-
-El script vuelve a crear las mismas variables derivadas necesarias para el modelo, separa
-`Pago_atiempo` cuando está disponible, elimina `puntaje` y la fecha original, transforma los
-datos utilizando el pipeline guardado y verifica que la cantidad de características resultante
-coincida con lo que espera el modelo.
-Después genera la predicción, obtiene las probabilidades de las clases cuando el modelo
-las permite y crea una interpretación legible: clase 0 como `Posible incumplimiento` y clase
-1 como `Pago a tiempo`. Si existen valores reales de `Pago_atiempo`, también calcula
-Accuracy, Balanced Accuracy, Precision, Recall y F1 por clase y una matriz de confusión.
-
-## API de predicción con FastAPI
-
-`API.py` convierte el modelo en un servicio consumible mediante solicitudes HTTP. Al
-iniciar, carga `modelo_final.joblib` y
-`resultados_feature_engineering/pipeline_preprocesamiento.joblib`. La API define el
-formato esperado para un registro de crédito y el formato de respuesta.
-Antes de predecir, la API vuelve a crear las variables derivadas utilizadas durante el
-feature engineering: variables temporales, relación cuota/salario, relación deuda/salario y
-saldo pendiente estimado. Después aplica el mismo pipeline y ejecuta el modelo. Esto es
-importante porque el servicio debe reproducir las transformaciones utilizadas durante el
-entrenamiento.
-
-## Respuesta de la API
-
-Cada predicción devuelve un identificador UUID, la clase predicha, el resultado legible, la
-probabilidad de incumplimiento, la probabilidad de pago a tiempo, el nivel de riesgo y el
-tiempo de predicción en milisegundos. El UUID identifica la predicción; no es un
-mecanismo de cifrado.
-El nivel de riesgo se determina con la probabilidad de incumplimiento: menor de 0,40
-corresponde a `Bajo`, desde 0,40 y menor de 0,70 a `Medio`, y 0,70 o más a `Alto`.
-
-## Endpoints
-
- Endpoint                       Método                         Función
-
-                                                               Confirma que la API está
- /                              GET                            funcionando y muestra los
-                                                               endpoints disponibles.
-
-                                                               Comprueba que la API, el
- /health                        GET                            modelo y el pipeline estén
-                                                               cargados.
-
- /predict                       POST                           Procesa un solo registro.
-
-                                                               Procesa una lista de
- /predict/batch                 POST
-                                                               registros.
-
-La documentación interactiva queda disponible en `/docs`. El endpoint batch es el que
-utiliza el script `enviar_predicciones_API.py`.
-
-## Persistencia de predicciones
-
-Cada predicción se agrega a `predicciones_api_monitoring.csv`. Esto conecta
-directamente la API con la etapa de monitoreo: la API produce las predicciones y el
-monitoring utiliza ese archivo como fuente de datos actuales.
-
-## Envío de registros a la API
-
-`enviar_predicciones_API.py` simula la llegada de nuevos registros al servicio. Lee
-`Base_de_datos.csv`, comprueba que existan las columnas requeridas, selecciona hasta
-100 registros mediante `random_state=42`, convierte los tipos y completa valores faltantes
-antes de construir la solicitud.
-Los valores numéricos faltantes se completan con la mediana de la muestra seleccionada y
-las categorías faltantes se reemplazan por `Desconocido`. La fecha se convierte a un
-formato definido y las columnas que deben ser enteras se redondean y convierten.
-
-El script envía los registros al endpoint `/predict/batch`. Por eso la API debe estar
-ejecutándose antes de lanzar este script. La respuesta recibida se guarda como
-`predicciones_api_monitoring.csv`.
-La API debe permanecer activa en una terminal mientras el script de envío se ejecuta
-desde una segunda terminal.
-  Terminal 1: uvicorn API:app --host 127.0.0.1 --port 8000
-  Terminal 2: python enviar_predicciones_API.py
-La separación en dos terminales es intencional: una mantiene el servicio disponible y la
-otra actúa como cliente que envía los registros.
-
-## Model Monitoring
-
-`model_monitoring.py` compara una base de referencia con las predicciones recientes
-generadas por la API. La referencia es `Base_de_datos_preparada.csv` y la muestra actual
-es `predicciones_api_monitoring.csv`.
-Antes de calcular métricas, el script valida que las predicciones sean 0 o 1, que las
-probabilidades estén entre 0 y 1 y que la suma de las probabilidades de incumplimiento y
-pago a tiempo esté aproximadamente entre 0,99 y 1,01. Solo las predicciones que pasan
-estas comprobaciones se consideran válidas para el monitoreo.
-
-## Qué se monitorea
-
-- Distribución de las clases predichas.
-- Probabilidad de incumplimiento: promedio, mediana, mínimo y máximo.
-- Niveles de riesgo y porcentaje de riesgo alto.
-- Tiempo de predicción.
-- Cambios en las distribuciones de las variables respecto a la referencia.
-- Comportamiento temporal de las predicciones.
-
-## Data Drift
-
-El análisis de drift compara las variables de referencia con las observadas en la muestra
-actual. Para variables numéricas se utilizan Kolmogorov-Smirnov, PSI y Jensen-Shannon;
-para variables categóricas se utilizan PSI, Jensen-Shannon y Chi-cuadrado. Las reglas de
-detección del script consideran, entre otros criterios, p-valores inferiores a 0,05, PSI de al
-menos 0,25 y Jensen-Shannon de al menos 0,10, según el tipo de variable y la métrica.
-En la ejecución documentada, realizada sobre una muestra actual de 101 registros, se
-evaluaron 20 variables y 15 fueron marcadas con drift, equivalente al 75% de las variables
-evaluadas. Este resultado corresponde a esta muestra y ejecución específica; no debe
-interpretarse como una condición permanente del modelo o de todos los datos futuros.
-Esta cifra significa `15 de 20 variables`, no que 75% de los clientes hayan cambiado ni que
-75% de los clientes tengan riesgo.
-
-Entre los resultados actuales destacan `tendencia_ingresos`,
-`promedio_ingresos_datacredito`, `cuota_pactada` y `tipo_credito` con señales de drift
-según las métricas calculadas. El archivo `data_drift_resultados.csv` conserva los
-estadísticos y banderas utilizados para estas conclusiones.
-
-## Salidas
-
-El script genera `metricas_monitoring.csv`, `distribucion_predicciones.csv`,
-`predicciones_validas_monitoring.csv`, `resumen_niveles_riesgo.csv`,
-`alertas_monitoring.txt`, `data_drift_resultados.csv`, `data_drift_alertas.txt`,
-`variables_con_drift.csv`, gráficos de distribución, gráficos de drift dentro de
-`data_drift_graficos/` y `analisis_temporal.csv` junto con
-`analisis_temporal_predicciones.png`.
-
-## Resultado observado en la muestra actual
-
-En el archivo de predicciones API proporcionado se observan 101 registros. El modelo
-clasificó 53 como `Posible incumplimiento` y 48 como `Pago a tiempo`, equivalentes a
-52,48% y 47,52%. La probabilidad media de incumplimiento fue 51,92%, con una mediana
-de 51,12%, mínimo de 20,13% y máximo de 100%. Los niveles de riesgo fueron 24 bajos,
-65 medios y 12 altos. El tiempo medio de predicción fue 27,21 ms.
-Estos porcentajes corresponden a las predicciones del modelo sobre la muestra procesada
-por la API. No deben confundirse con la distribución histórica del dataset original, que
-contiene 95,25% de pagos a tiempo y 4,75% de no pagos a tiempo. Tampoco significan
-que el 52,48% de esos clientes efectivamente incumplirá: son clasificaciones del modelo
-sobre una muestra nueva.
-
-## Aplicación de Streamlit
-
-`APP.py` construye una interfaz para consultar los resultados del monitoring. La aplicación
-no vuelve a entrenar el modelo; lee los archivos generados por el proceso de monitoreo y
-los presenta de forma visual.
-La aplicación tiene cuatro secciones: Resumen, Predicciones, Data Drift y Análisis
-temporal. En Resumen muestra el total de predicciones, porcentaje de incumplimiento,
-probabilidad promedio, cantidad de riesgo alto y tiempo promedio. También presenta tres
-gráficos: distribución de predicciones, distribución de probabilidad de incumplimiento y
-distribución de niveles de riesgo.
-La sección Predicciones permite filtrar por nivel de riesgo y por rango de probabilidad de
-incumplimiento. Data Drift muestra las variables monitorizadas, las variables con drift, la
-tabla completa de resultados y los gráficos almacenados en `data_drift_graficos`. Análisis
-temporal presenta la tabla temporal y el gráfico `analisis_temporal_predicciones.png`.
-Por tanto, Streamlit funciona como capa de visualización del monitoring: no sustituye los
-scripts anteriores, sino que consume sus resultados.
-
-## Ejecución y reproducibilidad
-
-## Regla fundamental de ejecución
-
-Todos los scripts deben conservarse en la carpeta principal del proyecto junto con los
-archivos y carpetas que necesitan. Deben ejecutarse desde esa carpeta. Los scripts usan
-rutas construidas a partir de la ubicación del archivo o rutas relativas, por lo que moverlos,
-cambiar los nombres de los artefactos o ejecutarlos desde otra ubicación puede provocar
-errores de archivos no encontrados.
-La ruta absoluta de la carpeta puede variar según el equipo de cada usuario. No es
-necesario utilizar una ruta personal específica; lo importante es conservar la estructura
-interna del proyecto y ejecutar los comandos desde la carpeta raíz.
-
-## Instalación y preparación del entorno
-
-Antes de ejecutar el flujo del proyecto se deben instalar las dependencias definidas en
-requirements.txt. Se recomienda utilizar un entorno virtual para mantener aisladas las
-librerías del proyecto.
-En Windows, desde la carpeta raíz del proyecto:
-```text
+```bash
 python -m venv venv
-```
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # Linux / macOS
 
-```text
-venv\Scripts\activate
-```
-
-```text
 pip install -r requirements.txt
 ```
 
-Una vez instaladas las dependencias, los scripts pueden ejecutarse siguiendo el orden
-establecido en este documento.
+### Orden de ejecución
 
-## Orden recomendado
-
-1. Ejecutar `Cargar_datos.py` para generar `Base_de_datos_preparada.csv` y el informe
-de calidad.
-2. Ejecutar `Comprension_eda.py` para regenerar el EDA, sus tablas y sus 10 gráficos.
-3. Ejecutar `ft_engineering.py` para generar los conjuntos transformados y el pipeline.
-4. Ejecutar `model_training_evaluation.py` para entrenar los tres modelos, comparar sus
-métricas y guardar `modelo_final.joblib`.
-5. Ejecutar `model_deploy.py` para aplicar el modelo final y generar las predicciones y
-reportes de deployment.
-
-6. Iniciar la API mediante uvicorn para disponer del servicio de predicción:
-```text
-uvicorn API:app --host 127.0.0.1 --port 8000
-```
-
-7. Manteniendo la API abierta, ejecutar `enviar_predicciones_API.py` para enviar hasta 100
-registros al endpoint batch.
-8. Ejecutar `model_monitoring.py` para validar y analizar las predicciones producidas por la
-API.
-
-9. Ejecutar APP.py mediante Streamlit para visualizar los resultados del monitoring:
-```text
-python -m streamlit run APP.py
-```
-
-## Ejecución de Streamlit
+| # | Comando | Qué hace |
+| --- | --- | --- |
+| 1 | python Cargar_datos.py | Limpia Base_de_datos.csv → genera Base_de_datos_preparada.csv |
+| 2 | python Comprension_eda.py | Regenera el EDA completo (reportes, CSV y 10 gráficos) |
+| 3 | python ft_engineering.py | Genera train/test transformados + pipeline de preprocesamiento |
+| 4 | python model_training_evaluation.py | Entrena y compara los 3 modelos, guarda modelo_final.joblib |
+| 5 | python model_deploy.py | Aplica el modelo final y genera predicciones/reportes de validación |
+| 6 | uvicorn API:app --host 127.0.0.1 --port 8000 | Levanta la API — dejar corriendo en Terminal 1 |
+| 7 | Probar POST /predict/batch en /docs con el JSON de ejemplo (sección 9) | Verificación manual de que el servicio responde correctamente |
+| 8 | En Terminal 2, sin cerrar la API: python enviar_predicciones_API.py | Envía hasta 100 registros al endpoint batch → genera predicciones_api_monitoring.csv |
+| 9 | python model_monitoring.py | Valida las predicciones, calcula métricas y data drift |
+| 10 | python -m streamlit run APP.py | Levanta el tablero de visualización del monitoreo |
+| 11 (opcional) | docker build -t modelo-creditos-api . / docker run -d -p 8000:8000 ... | Empaqueta y sirve la API en un contenedor, alternativa al paso 6 |
 
 ```text
-python -m streamlit run APP.py
+Terminal 1                         Terminal 2
+───────────                        ───────────
+uvicorn API:app                    (esperar a que la API esté arriba)
+--host 127.0.0.1 --port 8000  →    python enviar_predicciones_API.py
+   (se mantiene abierta)              (se ejecuta y termina)
 ```
 
-## Ejecución de la API
+La API debe permanecer activa mientras se prueba /predict/batch desde /docs y mientras corre enviar_predicciones_API.py. Puede cerrarse después, ya que model_monitoring.py y APP.py solo leen los archivos que ya quedaron generados.
+
+## Descripción general y caso de negocio
+
+Has iniciado tu labor en el equipo de Datos y Analítica de una empresa financiera, desempeñándote como Científico de Datos Junior Advanced. Tu primera asignación consiste en desarrollar un modelo predictivo mediante técnicas de aprendizaje automático, utilizando información histórica de créditos, con el objetivo de anticipar el comportamiento de nuevos usuarios.
+
+La empresa opera bajo un esquema estructurado de proyectos, en el cual cada iniciativa debe seguir una arquitectura de carpetas estrictamente definida. Esta estructura no puede ser modificada, ya que los procesos de despliegue a producción están automatizados a través de pipelines de validación en Jenkins. Cualquier alteración en la organización de carpetas podría generar retrasos significativos en el paso a producción.
+
+La variable objetivo utilizada en el proyecto es Pago_atiempo. La clasificación utilizada por los scripts interpreta la clase 0 como posible incumplimiento y la clase 1 como pago a tiempo. El problema presenta una distribución de clases desbalanceada, por lo que el análisis no debe depender únicamente de Accuracy
+
+**Prioridad de negocio:** minimizar el riesgo de originar créditos que no se pagarán. El criterio de selección del modelo prioriza el recall de la clase 0 por encima de la exactitud general.
+
+## Flujo general del proyecto
+
+| Etapa | Script principal | Entrada principal | Resultado principal |
+| --- | --- | --- | --- |
+| Preparación y calidad | Cargar_datos.py | Base_de_datos.csv | Base_de_datos_preparada.csv |
+| EDA | Comprension_eda.py | Base_de_datos_preparada.csv | Reporte EDA, CSV y 10 gráficos |
+| Feature Engineering | ft_engineering.py | Base_de_datos_preparada.csv | Train/test transformados y pipeline |
+| Entrenamiento | model_training_evaluation.py | Train/test transformados | Modelos evaluados y modelo_final.joblib |
+| Deployment | model_deploy.py | Modelo + pipeline + datos | Predicciones y reportes |
+| Servicio | API.py | Modelo + pipeline | Endpoints de predicción |
+| Envío a API | enviar_predicciones_API.py | Base_de_datos.csv | predicciones_api_monitoring.csv |
+| Monitoring | model_monitoring.py | Base preparada + predicciones API | Métricas, drift y análisis temporal |
+| Dashboard | APP.py | Resultados de monitoring | Interfaz Streamlit |
+
+Los scripts construyen sus rutas a partir de su propia ubicación o de rutas relativas: mover un archivo, renombrar un artefacto o ejecutar desde otra carpeta puede provocar errores de archivo no encontrado.
+
+## Arquitectura y estructura de carpetas
 
 ```text
-uvicorn API:app --host 127.0.0.1 --port 8000
+proyecto-credito-ml/
+│
+├── Base_de_datos.csv                       # Dataset crudo (10.763 filas x 23 columnas)
+├── Base_de_datos_preparada.csv             # Salida de Cargar_datos.py
+├── Observaciones_calidad_datos.csv         # Resumen de calidad de datos
+│
+├── Cargar_datos.py
+├── Comprension_eda.py
+├── ft_engineering.py
+├── model_training_evaluation.py
+├── model_deploy.py
+├── API.py
+├── enviar_predicciones_API.py
+├── model_monitoring.py
+├── APP.py
+│
+├── resultados_eda_entrega/                 # Reportes, CSV y graficos/ (10 imagenes) del EDA
+├── resultados_feature_engineering/         # X/y train-test, pipeline_preprocesamiento.joblib
+├── resultados_model_training_evaluation/   # Modelos, matrices de confusion, curva ROC
+├── resultados_model_deploy/                # Predicciones y reportes de deployment
+├── resultados_model_monitoring/            # Metricas, drift, alertas y analisis temporal
+│   └── data_drift_graficos/
+│
+├── modelo_final.joblib                     # Modelo seleccionado (raiz y en resultados)
+├── predicciones_api_monitoring.csv         # Historico de predicciones servidas por la API
+│
+├── Dockerfile
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
 
-La API puede detenerse cerrando la terminal donde está ejecutándose o interrumpiendo el
-proceso. No es necesario mantenerla abierta cuando no se estén realizando predicciones.
-Sí debe estar activa mientras `enviar_predicciones_API.py` envía registros.
-Algunos artefactos son fundamentales para continuar el flujo.
-`Base_de_datos_preparada.csv` alimenta EDA y feature engineering;
-`pipeline_preprocesamiento.joblib` acompaña al modelo para transformar nuevos datos;
-`modelo_final.joblib` es el artefacto que utiliza deployment y API; y
-`predicciones_api_monitoring.csv` conecta la API con monitoring y Streamlit.
+*Esta estructura no debe modificarse: los pipelines de validación de Jenkins dependen de ella para el paso a producción.*
 
-## Contenerización con Docker
+### Diagrama de arquitectura
 
-El proyecto incorpora Docker como mecanismo de empaquetado y ejecución reproducible
-del servicio de predicción. La contenerización se utiliza específicamente para desplegar la
-API desarrollada con FastAPI junto con las dependencias y artefactos necesarios para
-realizar inferencias.
-El archivo Dockerfile define la configuración de la imagen. El proceso utiliza python:3.13-slim como imagen base y establece /app como directorio de trabajo dentro del contenedor.
-Posteriormente, copia requirements.txt e instala las dependencias necesarias mediante
-pip.
-Después de instalar las dependencias, el Dockerfile incorpora los archivos necesarios para
-el servicio:
-API.py
-modelo_final.joblib
-resultados_feature_engineering/pipeline_preprocesamiento.joblib
+![Flujo de artefactos y scripts del proyecto, extremo a extremo.](imagenes/diagrama_arquitectura.png)
 
-Finalmente, se expone el puerto 8000 y se configura Uvicorn para iniciar automáticamente
-la aplicación FastAPI cuando se ejecuta el contenedor.
-## Construcción de la imagen
+*Flujo de artefactos y scripts del proyecto, extremo a extremo.*
 
-La construcción debe realizarse desde la carpeta raíz del proyecto, donde se encuentran el
-Dockerfile, requirements.txt, el modelo y los demás archivos requeridos:
+## Datos de entrada y preparación — Cargar_datos.py
+
+La base original Base_de_datos.csv contiene 10.763 registros y 23 columnas. La variable objetivo Pago_atiempo tiene 10.252 registros de clase 1 y 511 de clase 0, equivalentes aproximadamente a 95,25 % y 4,75 % respectivamente — un desbalance fuerte que se conserva durante el análisis y se aborda con métricas por clase y balanceadas en lugar de depender de Accuracy global.
+
+Cargar_datos.py funciona como una barrera de control de calidad: lee la base, revisa dimensiones, tipos, nulos y duplicados, y aplica validaciones específicas sobre fechas, edades, variables financieras, puntajes, saldos, categorías y el objetivo. Cuando encuentra valores claramente inválidos los convierte en nulos, en lugar de inventar un reemplazo. No elimina masivamente registros: conserva la estructura y deja los problemas detectados listos para que etapas posteriores los traten.
+
+### Validaciones aplicadas
+
+- Edades fuera del rango 18–100
+- Valores negativos en variables donde no son válidos
+- Salarios menores o iguales a cero
+- Cuotas superiores al salario
+- Puntajes negativos
+- Saldos inconsistentes (p. ej. saldo principal o de mora mayor al saldo total)
+- Categorías de tendencia_ingresos fuera de las tres esperadas (Creciente, Decreciente, Estable)
+- Valores inválidos de Pago_atiempo
+- Valores extremos mediante el criterio del rango intercuartílico (IQR)
+
+El script también crea variables derivadas iniciales — año, mes, día de la semana y hora del préstamo; relación cuota/salario; relación deuda/salario; saldo pendiente estimado — y convierte los infinitos resultantes en nulos.
+
+### Resultados de la ejecución documentada
+
+| Indicador | Valor |
+| --- | --- |
+| Registros | 10.763 |
+| Columnas | 23 |
+| Valores nulos iniciales detectados | 7.175 |
+| Filas completamente duplicadas | 0 |
+| Edades fuera de rango (18–100) | 150 |
+| Puntajes negativos | 135 |
+| Puntajes Datacrédito negativos | 1 |
+| Salarios ≤ 0 | 24 |
+| Cuotas superiores al salario | 11 |
+| Valores de tendencia_ingresos fuera de categoría | 58 |
+
+**Salidas:** Base_de_datos_preparada.csv y Observaciones_calidad_datos.csv.
+
+**¿Por qué antes del EDA?** Para evitar que el análisis exploratorio mezcle datos originales con errores ya identificables. Así el EDA recibe una versión consistente y puede concentrarse en describir distribuciones y patrones, en vez de repetir controles básicos de integridad.
+
+## Análisis exploratorio de datos (EDA) — Comprension_eda.py
+
+Toma Base_de_datos_preparada.csv y construye un análisis exploratorio reproducible. Al iniciar, elimina y vuelve a crear la carpeta resultados_eda_entrega/ para que los resultados de una ejecución no se mezclen con archivos de una ejecución anterior.
+
+El EDA no entrena el modelo: describe la estructura de los datos, caracteriza variables numéricas y categóricas, revisa el objetivo, estudia relaciones con Pago_atiempo, observa correlaciones, detecta comportamientos atípicos y revisa la dimensión temporal.
+
+### Qué analiza
+
+- Resumen general (registros, columnas, celdas, nulos, clasificación de variables)
+- Calidad de datos por columna y distribución del objetivo
+- Estadísticas descriptivas y frecuencias de variables categóricas
+- Comparación de variables numéricas y categóricas según Pago_atiempo
+- Correlaciones entre variables numéricas y con el objetivo
+- Valores extremos y comportamiento temporal de los préstamos
+
+### Los 10 gráficos generados (resultados_eda_entrega/graficos/)
+
+![01_distribuciones_numericas](imagenes/01_distribuciones_numericas.png)
+
+*01_distribuciones_numericas.png — Histogramas de las variables numéricas principales (capital prestado, plazo, edad, salario, puntajes, saldos). Se observa fuerte concentración y asimetría en variables financieras, y outliers extremos en salario_cliente y total_otros_prestamos.*
+
+![02_boxplots_numericos](imagenes/02_boxplots_numericos.png)
+
+*02_boxplots_numericos.png — Boxplots comparativos de las variables numéricas en una misma escala, que evidencian valores atípicos muy alejados en salario_cliente y total_otros_prestamos frente al resto de variables.*
+
+![03_distribucion_target](imagenes/03_distribucion_target.png)
+
+*03_distribucion_target.png — Distribución de Pago_atiempo: 10.252 registros de pago a tiempo frente a 511 de no pago a tiempo. Es el gráfico más directo para mostrar el desbalance del objetivo (cantidades, no probabilidades de predicciones futuras).*
+
+![04_frecuencias_categoricas](imagenes/04_frecuencias_categoricas.png)
+
+*04_frecuencias_categoricas.png — Frecuencias de tipo_credito, tipo_laboral y tendencia_ingresos. tipo_credito está dominado por dos categorías; tipo_laboral se concentra en 'Empleado'; tendencia_ingresos se concentra en 'Creciente'.*
+
+![05_numericas_por_target](imagenes/05_numericas_por_target.png)
+
+*05_numericas_por_target.png — Boxplots de variables numéricas (capital prestado, plazo, edad, salario, otros préstamos, cuota pactada) separados por clase de Pago_atiempo, para observar diferencias de distribución entre pagadores e incumplidos.*
+
+![06_categoricas_por_target](imagenes/06_categoricas_por_target.png)
+
+*06_categoricas_por_target.png — Porcentaje de Pago_atiempo dentro de cada categoría de tipo_credito, tipo_laboral y tendencia_ingresos. El tipo de crédito código 6 muestra una proporción de incumplimiento notablemente mayor que el resto.*
+
+![07_matriz_correlacion](imagenes/07_matriz_correlacion.png)
+
+*07_matriz_correlacion.png — Matriz de correlación de todas las variables numéricas, incluidas las derivadas. puntaje muestra la correlación más alta con Pago_atiempo, lo que refuerza la decisión de excluirla por posible fuga de información.*
+
+![08_relaciones_financieras](imagenes/08_relaciones_financieras.png)
+
+*08_relaciones_financieras.png — Relación entre salario_cliente y capital_prestado. La nube de puntos muestra una relación poco definida y fuertemente afectada por valores extremos de salario.*
+
+![09_comportamiento_puntajes](imagenes/09_comportamiento_puntajes.png)
+
+*09_comportamiento_puntajes.png — Comportamiento de puntaje según Pago_atiempo: los clientes que pagan a tiempo (clase 1) se concentran en puntajes altos, mientras que la clase 0 muestra una distribución mucho más amplia y baja.*
+
+![10_comportamiento_temporal](imagenes/10_comportamiento_temporal.png)
+
+*10_comportamiento_temporal.png — Cantidad de préstamos por mes. Se observa un pico entre diciembre y enero, seguido de una tendencia decreciente sostenida en los meses siguientes.*
+
+### Reportes y CSV generados
+
+Reporte_EDA.xlsx, Reporte_EDA.txt, resumen_inicial.csv, resumen_outliers.csv, resumen_temporal.csv, calidad_datos.csv, clasificacion_variables.csv, distribucion_target.csv, estadisticas_numericas.csv, frecuencias_categoricas.csv, comparacion_numerica_target.csv, comportamiento_categoricas_target.csv, correlaciones.csv, correlaciones_target.csv, hallazgos.csv, matriz_correlacion.csv.
+
+### Hallazgos que pasan a la siguiente etapa
+
+El objetivo está fuertemente desbalanceado; existen valores faltantes y comportamientos financieros que deben tratarse en el preprocesamiento; puntaje se identifica como variable potencialmente problemática por posible fuga de información y se excluye del modelado (ver secciones 6 y 13).
+
+*Correlación, diferencias entre grupos o alta importancia posterior de una variable no deben interpretarse automáticamente como causalidad. El EDA describe relaciones observadas y apoya decisiones técnicas; no demuestra que una variable provoque el incumplimiento.*
+
+## Ingeniería de características — ft_engineering.py
+
+Convierte la base preparada en una representación adecuada para entrenar modelos: el modelo no puede recibir directamente una mezcla de fechas, texto, valores faltantes y escalas financieras diferentes.
+
+### Creación de características
+
+- fecha_prestamo se transforma en año, mes, día, día de la semana, semana del año, trimestre, hora y una variable binaria de fin de semana; la fecha original se elimina después.
+- Variables financieras derivadas: relacion_cuota_salario, relacion_deuda_salario, saldo_pendiente_estimado.
+- tipo_credito se convierte a variable categórica explícita.
+
+**Separación y prevención de fuga de información:** Pago_atiempo se separa como objetivo; puntaje se excluye explícitamente por posible data leakage (ver sección 13).
+
+**División train/test:** train_test_split con 80 % entrenamiento / 20 % prueba, random_state=42, stratify=y. Sobre 10.763 registros esto equivale a 8.610 registros de entrenamiento y 2.153 de prueba.
+
+### Preprocesamiento (ColumnTransformer)
+
+- Numéricas → imputación por mediana + StandardScaler
+- Categóricas → imputación por la categoría más frecuente + OneHotEncoder(handle_unknown="ignore")
+- El preprocesador se ajusta únicamente con entrenamiento y luego se aplica a prueba, evitando fuga de información del conjunto de prueba.
+
+Tras separar objetivo, puntaje y la fecha, quedan 27 variables predictoras (24 numéricas + 3 categóricas). Con la codificación One-Hot de las categorías presentes, la representación transformada llega a 35 características.
+
+**Salidas (resultados_feature_engineering/):** X_train_transformado.csv, X_test_transformado.csv, y_train.csv, y_test.csv, pipeline_preprocesamiento.joblib, nombres_caracteristicas.csv, resumen_valores_nulos.csv, resumen_variables.csv, resumen_feature_engineering.txt.
+
+## Entrenamiento y evaluación de modelos — model_training_evaluation.py
+
+Recibe los conjuntos ya transformados y entrena tres algoritmos:
+
+| Modelo | Configuración documentada en el código | Función en el proyecto |
+| --- | --- | --- |
+| Regresión Logística | class_weight="balanced", max_iter=2000 | Modelo de referencia (técnica lineal) |
+| Random Forest | 300 árboles, class_weight="balanced" | Enfoque no lineal basado en ensamble |
+| SVM calibrado | SVC balanceado + CalibratedClassifierCV (sigmoid, cv=3) | Comparación con otra forma de separación de clases |
+
+class_weight="balanced" se usa en los modelos que lo soportan para considerar el desbalance durante el entrenamiento. La SVM base se envuelve en CalibratedClassifierCV para poder obtener probabilidades (predict_proba).
+
+**¿Por qué varios modelos?** No se asume de antemano que una técnica será adecuada. Los tres se entrenan sobre los mismos datos y se evalúan con una estructura común, para poder seleccionar el modelo final según el objetivo del proyecto: detectar registros de la clase 0 (posible incumplimiento).
+
+Métricas calculadas: Accuracy, Balanced Accuracy, ROC-AUC, PR-AUC, Precision/Recall/F1 por clase (0 y 1) y macro, matrices de confusión. La validación cruzada usa 5 particiones y F1-score macro como métrica, para observar el comportamiento en distintas divisiones del entrenamiento.
+
+**Criterio de selección del modelo final:** el código ordena los modelos por (1) Recall de la clase 0, (2) F1-score de la clase 0 y (3) Balanced Accuracy. El primero según ese orden se guarda como modelo_final.joblib, tanto en resultados_model_training_evaluation/ como en la carpeta raíz del proyecto.
+
+*Este criterio refleja una decisión metodológica: interesa especialmente no perder la capacidad de identificar los registros 'No paga a tiempo'. Las métricas adicionales siguen siendo relevantes para entender el comportamiento global y el equilibrio entre clases.*
+
+*Completar con los valores exactos de resultados_model_training_evaluation/resultados_modelos.csv al ejecutar el pipeline en el entorno de revisión.*
+
+## Model Deployment — model_deploy.py
+
+Reconstruye las mismas variables derivadas necesarias para el modelo, separa Pago_atiempo cuando está disponible, elimina puntaje y la fecha original, transforma los datos con el pipeline guardado y verifica que la cantidad de características resultante coincida con lo que espera el modelo.
+
+Después genera la predicción, obtiene probabilidades por clase cuando el modelo lo permite, y crea una interpretación legible: clase 0 → 'Posible incumplimiento', clase 1 → 'Pago a tiempo'. Si existen valores reales de Pago_atiempo en los datos de entrada, también calcula Accuracy, Balanced Accuracy, Precision, Recall y F1 por clase, y una matriz de confusión.
+
+## API de predicción (FastAPI) — API.py
+
+Convierte el modelo en un servicio HTTP. Al iniciar, carga modelo_final.joblib y resultados_feature_engineering/pipeline_preprocesamiento.joblib. Antes de predecir, reconstruye las mismas variables derivadas usadas en el feature engineering (temporales, relación cuota/salario, relación deuda/salario, saldo pendiente estimado), aplica el mismo pipeline y ejecuta el modelo — reproduciendo exactamente las transformaciones usadas en el entrenamiento.
+
+### Endpoints
+
+| Endpoint | Método | Función |
+| --- | --- | --- |
+| / | GET | Confirma que la API está funcionando y lista los endpoints disponibles |
+| /health | GET | Comprueba que la API, el modelo y el pipeline estén cargados |
+| /predict | POST | Procesa un solo registro |
+| /predict/batch | POST | Procesa una lista de registros |
+
+### Respuesta de la API
+
+Cada predicción devuelve: un identificador UUID (identifica la predicción; no es un mecanismo de cifrado), la clase predicha, el resultado legible, la probabilidad de incumplimiento, la probabilidad de pago a tiempo, el nivel de riesgo y el tiempo de predicción en milisegundos.
+
+### Umbrales de nivel de riesgo (según probabilidad de incumplimiento)
+
+| Probabilidad de incumplimiento | Nivel de riesgo |
+| --- | --- |
+| < 0,40 | Bajo |
+| 0,40 – < 0,70 | Medio |
+| ≥ 0,70 | Alto |
+
+Cada predicción se agrega a predicciones_api_monitoring.csv — este archivo conecta directamente la API con la etapa de monitoreo.
+
+### Ejemplo de solicitud (POST /predict/batch)
+
+Úsalo para probar el servicio manualmente desde http://127.0.0.1:8000/docs (paso 7 de la ejecución rápida):
+
+```json
+{
+  "registros": [
+    {
+      "tipo_credito": "Libre inversión",
+      "fecha_prestamo": "2024-03-15",
+      "capital_prestado": 5000000,
+      "plazo_meses": 24,
+      "edad_cliente": 35,
+      "tipo_laboral": "Empleado",
+      "salario_cliente": 2500000,
+      "total_otros_prestamos": 800000,
+      "cuota_pactada": 250000,
+      "puntaje_datacredito": 720,
+      "cant_creditosvigentes": 2,
+      "huella_consulta": 1,
+      "saldo_mora": 0,
+      "saldo_total": 800000,
+      "saldo_principal": 700000,
+      "saldo_mora_codeudor": 0,
+      "creditos_sectorFinanciero": 1,
+      "creditos_sectorCooperativo": 0,
+      "creditos_sectorReal": 1,
+      "promedio_ingresos_datacredito": 2400000,
+      "tendencia_ingresos": "Estable"
+    }
+  ]
+}
+```
+
+![Documentación interactiva de la API (Swagger UI)](imagenes/api_swagger_docs.png)
+
+*Documentación interactiva de la API (Swagger UI) — http://127.0.0.1:8000/docs*
+
+## Envío de registros a la API — enviar_predicciones_API.py
+
+Simula la llegada de nuevos registros al servicio. Lee Base_de_datos.csv, comprueba que existan las columnas requeridas, selecciona hasta 100 registros con random_state=42, convierte tipos y completa valores faltantes antes de construir la solicitud (numéricos → mediana de la muestra; categóricos → "Desconocido"; fecha → formato definido; columnas enteras → redondeadas y convertidas).
+
+Envía los registros al endpoint /predict/batch, por lo que la API debe estar corriendo antes de ejecutar este script. La respuesta se guarda como predicciones_api_monitoring.csv.
+
 ```text
-docker build -t modelo-creditos-api .
+Terminal 1: uvicorn API:app --host 127.0.0.1 --port 8000
+Terminal 2: python enviar_predicciones_API.py
 ```
 
-Durante este proceso Docker utiliza el Dockerfile para crear una imagen que contiene el
-entorno de ejecución, las dependencias de Python, la API y los artefactos necesarios para
-realizar las predicciones.
-## Ejecución del contenedor
+La separación en dos terminales es intencional: una mantiene el servicio disponible y la otra actúa como cliente que envía los registros.
 
-Una vez construida la imagen, se inicia un contenedor mediante:
-```text
-docker run -d -p 8000:8000 --name modelo-creditos-api modelo-creditos-api
-```
+## Model Monitoring y Data Drift — model_monitoring.py
 
-El parámetro -d ejecuta el contenedor en segundo plano, mientras que -p 8000:8000
-conecta el puerto 8000 del computador con el puerto 8000 utilizado por FastAPI dentro del
-contenedor.
-El nombre modelo-creditos-api permite identificar posteriormente el contenedor mediante
-los comandos de Docker.
-## Verificación del servicio
+Compara una base de referencia (Base_de_datos_preparada.csv) con las predicciones recientes generadas por la API (predicciones_api_monitoring.csv).
 
-Con el contenedor en ejecución, la API puede comprobarse mediante la documentación
-interactiva de FastAPI:
-```text
-http://127.0.0.1:8000/docs
-```
+**Validación previa:** solo se consideran válidas para el monitoreo las predicciones donde la clase predicha es 0 o 1, las probabilidades están entre 0 y 1, y la suma de probabilidad de incumplimiento + probabilidad de pago a tiempo está aproximadamente entre 0,99 y 1,01.
 
-Desde esta interfaz se pueden consultar los endpoints disponibles y realizar pruebas de los
-servicios de predicción.
-También puede verificarse el estado de la API mediante el endpoint:
-```text
-http://127.0.0.1:8000/health
-```
+### Qué se monitorea
 
-El endpoint permite comprobar que el servicio, el modelo y el pipeline de preprocesamiento
-hayan sido cargados correctamente.
-## Versionamiento con Git y GitHub
+- Distribución de las clases predichas
+- Probabilidad de incumplimiento (promedio, mediana, mínimo, máximo)
+- Niveles de riesgo y porcentaje de riesgo alto
+- Tiempo de predicción
+- Cambios en las distribuciones de las variables respecto a la referencia
+- Comportamiento temporal de las predicciones
 
-El proyecto utiliza Git para controlar las versiones de los archivos y mantener un historial
-de los cambios realizados durante el desarrollo. El repositorio se inicializa desde la carpeta
-raíz del proyecto, manteniendo la estructura de archivos necesaria para que los scripts
-puedan ejecutarse correctamente.
+### Data Drift
 
-## Flujo de ramas y versiones
+| Tipo de variable | Métricas utilizadas |
+| --- | --- |
+| Numéricas | Kolmogorov–Smirnov (KS test), PSI, Jensen–Shannon |
+| Categóricas | PSI, Jensen–Shannon, Chi-cuadrado |
 
-La rama principal del repositorio es main y representa la versión integrada del proyecto.
-Para organizar el desarrollo, los cambios se realizan mediante ramas de trabajo
-independientes, evitando modificar directamente la versión principal durante cada etapa de
-desarrollo.
+Reglas de detección (entre otros criterios): p-valor < 0,05, PSI ≥ 0,25 y Jensen–Shannon ≥ 0,10, según el tipo de variable y la métrica.
 
-Una vez completados y revisados los cambios de una rama de trabajo, estos se integran a
-main mediante un proceso de merge. De esta manera, la rama principal mantiene una
-versión consolidada del proyecto, mientras que las ramas de trabajo permiten desarrollar y
-probar modificaciones de forma independiente.
+### Resultado observado en la muestra actual (101 registros procesados por la API)
 
-El historial de Git permite identificar los cambios realizados en cada etapa mediante
-commits, facilitando el seguimiento de la evolución del código y la recuperación de
-versiones anteriores cuando sea necesario.
+| Indicador | Valor |
+| --- | --- |
+| Predicciones válidas analizadas | 101 |
+| Posible incumplimiento | 53 (52,48 %) |
+| Pago a tiempo | 48 (47,52 %) |
+| Probabilidad de incumplimiento — media | 51,92 % |
+| Probabilidad de incumplimiento — mediana | 51,12 % |
+| Probabilidad de incumplimiento — mínimo | 20,13 % |
+| Probabilidad de incumplimiento — máximo | 100 % |
+| Riesgo bajo | 24 |
+| Riesgo medio | 65 |
+| Riesgo alto | 12 |
+| Tiempo medio de predicción | 27,21 ms |
+| Variables evaluadas para drift | 20 |
+| Variables con drift detectado | 15 (75 %) |
 
-## Estructura y control de archivos
+*75 % significa "15 de 20 variables evaluadas" — no que el 75 % de los clientes haya cambiado de comportamiento, ni que el 75 % tenga riesgo alto. Este resultado corresponde a esta muestra y ejecución específicas; no debe interpretarse como una condición permanente del modelo o de datos futuros.*
 
-Git permite mantener bajo control de versiones los scripts, archivos de configuración y
-artefactos que forman parte de la entrega. Al mismo tiempo, se utiliza .gitignore para
-excluir archivos temporales o generados automáticamente que no deben formar parte del
-repositorio, como:
+Entre las variables con señales de drift en esta ejecución destacan tendencia_ingresos, promedio_ingresos_datacredito, cuota_pactada y tipo_credito (detalle completo en data_drift_resultados.csv).
 
-pycache/
-*.pyc
-.env
-.venv/
-venv/
-*.log
-.streamlit/secrets.toml
+*Estos porcentajes corresponden a las predicciones del modelo sobre la muestra procesada por la API. No deben confundirse con la distribución histórica del dataset original (95,25 % pagos a tiempo / 4,75 % no pagos a tiempo), ni implican que el 52,48 % de esos clientes efectivamente incumplirá.*
 
-Los resultados y artefactos que forman parte de la entrega se conservan en el proyecto,
-incluyendo las carpetas resultados_*, modelo_final.joblib y
-predicciones_api_monitoring.csv.
+![analisis_temporal_predicciones.png](imagenes/analisis_temporal_predicciones.png)
 
-## Repositorio remoto
+*analisis_temporal_predicciones.png — Evolución temporal de las predicciones (ejecución de ejemplo, muestra única).*
 
-El proyecto se sincroniza con un repositorio remoto en GitHub. Esto permite conservar el
-código y los archivos versionados en un repositorio central, facilitar la entrega del proyecto
-y mantener un historial de modificaciones.
+**Salidas (resultados_model_monitoring/):** metricas_monitoring.csv, distribucion_predicciones.csv, predicciones_validas_monitoring.csv, resumen_niveles_riesgo.csv, alertas_monitoring.txt, data_drift_resultados.csv, data_drift_alertas.txt, variables_con_drift.csv, data_drift_graficos/, analisis_temporal.csv, analisis_temporal_predicciones.png.
 
-La estructura interna del proyecto debe conservarse también dentro del repositorio. No se
-deben cambiar los nombres o ubicaciones de archivos utilizados por los scripts sin
-actualizar las rutas correspondientes en el código.
+## Aplicación de Streamlit — APP.py
+
+Construye una interfaz para consultar los resultados del monitoring. No vuelve a entrenar el modelo: lee los archivos generados por model_monitoring.py y los presenta visualmente.
+
+### Secciones
+
+| Sección | Contenido |
+| --- | --- |
+| Resumen | Total de predicciones, % de incumplimiento, probabilidad promedio, cantidad de riesgo alto, tiempo promedio, y tres gráficos: distribución de predicciones, distribución de probabilidad de incumplimiento y distribución de niveles de riesgo |
+| Predicciones | Filtro por nivel de riesgo y por rango de probabilidad de incumplimiento |
+| Data Drift | Variables monitorizadas, variables con drift, tabla completa de resultados y gráficos de data_drift_graficos/ |
+| Análisis temporal | Tabla temporal y gráfico analisis_temporal_predicciones.png |
+
+Streamlit funciona como capa de visualización del monitoring: no sustituye los scripts anteriores, consume sus resultados.
+
+![Tablero de monitoreo](imagenes/tablero_streamlit_resumen.png)
+
+*Tablero de monitoreo — APP.py (Streamlit), sección Resumen.*
 
 ## Consideraciones metodológicas
 
-El desbalance de clases es una característica central del problema. Por eso el proyecto
-utiliza `class_weight="balanced"` en Regresión Logística, Random Forest y en la SVM
-base, y además evalúa las clases por separado.
-La exclusión de `puntaje` se realiza por posible fuga de información. Esta decisión no
-afirma que el puntaje sea irrelevante; significa que, para esta implementación, se consideró
-metodológicamente más seguro no utilizarlo como predictor.
-Las probabilidades producidas por el modelo deben interpretarse como salidas del
-clasificador para la muestra evaluada. El nivel de riesgo es una categorización definida por
-los umbrales del servicio y no constituye por sí mismo una conclusión causal sobre el
-comportamiento futuro de una persona.
-El Data Drift tampoco demuestra por sí mismo que el modelo haya empeorado. Indica que
-las distribuciones comparadas presentan diferencias bajo las métricas y umbrales
-utilizados. La evaluación de impacto sobre rendimiento requiere posteriormente contar con
-resultados reales observados para las predicciones actuales.
+- **El desbalance de clases:** es una característica central del problema. Por eso se usa class_weight="balanced" en Regresión Logística, Random Forest y en la SVM base, y además se evalúan las clases por separado.
+- **La exclusión de puntaje:** se realiza por posible fuga de información. No significa que el puntaje sea irrelevante — se consideró metodológicamente más seguro no usarlo como predictor en esta implementación.
+- **Las probabilidades:** producidas por el modelo son salidas del clasificador para la muestra evaluada. El nivel de riesgo es una categorización definida por los umbrales del servicio y no constituye, por sí misma, una conclusión causal sobre el comportamiento futuro de una persona.
+- **El Data Drift:** tampoco demuestra por sí mismo que el modelo haya empeorado: indica que las distribuciones comparadas presentan diferencias bajo las métricas y umbrales utilizados. Evaluar el impacto real sobre el rendimiento requiere, posteriormente, contar con resultados reales observados para las predicciones actuales.
+
+## Contenerización con Docker
+
+El proyecto incorpora Docker para empaquetar y ejecutar de forma reproducible el servicio de predicción (la API FastAPI, sus dependencias y los artefactos necesarios para inferencia).
+
+### Dockerfile
+
+```dockerfile
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY API.py .
+COPY modelo_final.joblib .
+COPY resultados_feature_engineering/pipeline_preprocesamiento.joblib .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "API:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+Usa python:3.13-slim como imagen base, define /app como directorio de trabajo, copia requirements.txt e instala dependencias, e incorpora únicamente API.py, modelo_final.joblib y pipeline_preprocesamiento.joblib — lo mínimo necesario para servir el modelo. Expone el puerto 8000 y arranca Uvicorn automáticamente al iniciar el contenedor.
+
+### Construcción de la imagen
+
+Desde la carpeta raíz del proyecto (donde están el Dockerfile, requirements.txt, el modelo y los demás archivos requeridos):
+
+```bash
+docker build -t modelo-creditos-api .
+```
+
+### Ejecución del contenedor
+
+```bash
+docker run -d -p 8000:8000 --name modelo-creditos-api modelo-creditos-api
+```
+
+- -d ejecuta el contenedor en segundo plano.
+- -p 8000:8000 conecta el puerto 8000 del host con el puerto 8000 de FastAPI dentro del contenedor.
+- modelo-creditos-api (como --name) permite identificar el contenedor con los comandos de Docker.
+
+### Verificación del servicio
+
+- Documentación interactiva: http://127.0.0.1:8000/docs
+- Estado del servicio: http://127.0.0.1:8000/health — confirma que el servicio, el modelo y el pipeline de preprocesamiento se cargaron correctamente.
+
+## Versionamiento con Git y GitHub
+
+El proyecto usa Git para controlar versiones y mantener el historial de cambios. El repositorio se inicializa desde la carpeta raíz, conservando la estructura de archivos necesaria para que los scripts se ejecuten correctamente.
+
+**Flujo de ramas:** main es la rama principal y representa la versión integrada del proyecto. Los cambios se desarrollan en ramas de trabajo independientes y se integran a main mediante merge una vez completados y revisados, evitando modificar directamente la versión principal durante cada etapa de desarrollo.
+
+### Historial de entregas (commits/ramas realizados)
+
+| Entrega | Contenido incorporado |
+| --- | --- |
+| 1 | Cargar_datos.py, Comprension_eda.py, ft_engineering.py y sus resultados (Base_de_datos_preparada.csv, Observaciones_calidad_datos.csv, resultados_eda_entrega/, resultados_feature_engineering/) |
+| 2 | model_training_evaluation.py, model_deploy.py y sus resultados (resultados_model_training_evaluation/, resultados_model_deploy/, modelo_final.joblib) |
+| 3 | API.py, APP.py, Dockerfile, enviar_predicciones_API.py, model_monitoring.py y todos sus resultados correspondientes (predicciones_api_monitoring.csv, resultados_model_monitoring/) |
+
+Cada commit permite identificar los cambios realizados en su etapa, facilitando el seguimiento de la evolución del código y la recuperación de versiones anteriores cuando sea necesario.
+
+### Estructura y control de archivos — .gitignore
+
+```gitignore
+__pycache__/
+*.pyc
+
+.venv/
+venv/
+
+.env
+*.log
+
+.streamlit/secrets.toml
+```
+
+Los resultados y artefactos que forman parte de la entrega sí se conservan en el repositorio: las carpetas resultados\_\*, modelo_final.joblib y predicciones_api_monitoring.csv.
+
+### Repositorio remoto
+
+El proyecto se sincroniza con un repositorio remoto en GitHub, lo que permite conservar código y archivos versionados en un repositorio central, facilitar la entrega y mantener un historial de modificaciones. La estructura interna debe conservarse también dentro del repositorio remoto: no deben cambiarse nombres o ubicaciones de archivos utilizados por los scripts sin actualizar las rutas correspondientes en el código.
+
+## Stack tecnológico
+
+- **Lenguaje:** Python 3.13
+- **Análisis y manipulación de datos:** pandas, numpy, tabulate
+- **Visualización:** matplotlib, seaborn
+- **Modelamiento:** scikit-learn, xgboost, joblib
+- **Servicio del modelo:** FastAPI, Pydantic, Uvicorn
+- **Monitoreo:** SciPy (pruebas estadísticas), Streamlit
+- **Contenerización:** Docker
+- **Control de versiones:** Git / GitHub
 
 ## Conclusión
 
-El proyecto construye un flujo completo y trazable de Machine Learning para la predicción
-de incumplimiento de créditos. El trabajo comienza con una revisión de calidad que
-transforma la base original en un dataset preparado; continúa con un EDA que documenta
-la estructura, distribución y relaciones de los datos; y después convierte esa información en
-características procesables mediante un pipeline reproducible.
-La etapa de modelado compara tres enfoques —Regresión Logística, Random Forest y
-SVM calibrado— utilizando múltiples métricas y validación cruzada. La selección del
-modelo final prioriza la detección de la clase `No paga a tiempo`, y el modelo seleccionado
-se persiste para poder reutilizarlo sin repetir el entrenamiento.
-A partir de ese artefacto, el proyecto pasa de un experimento de Machine Learning a un
-proceso de inferencia: deployment aplica el pipeline y el modelo a nuevos registros,
-FastAPI expone la predicción mediante endpoints, el script de envío simula el ingreso de
-nuevos datos y monitoring analiza las predicciones y posibles cambios en las
-distribuciones.
-Finalmente, Streamlit reúne los resultados del monitoreo en una interfaz visual. La
-solución, por tanto, no se limita al entrenamiento de un modelo: integra preparación,
-análisis, modelado, reutilización, servicio, monitoreo y visualización, manteniendo una
-relación explícita entre los archivos que producen y consumen cada etapa.
+El proyecto construye un flujo completo y trazable de Machine Learning para la predicción de incumplimiento de créditos. Comienza con una revisión de calidad que transforma la base original en un dataset preparado; continúa con un EDA que documenta la estructura, distribución y relaciones de los datos; y convierte esa información en características procesables mediante un pipeline reproducible.
+
+La etapa de modelado compara tres enfoques —Regresión Logística, Random Forest y SVM calibrado— utilizando múltiples métricas y validación cruzada. La selección del modelo final prioriza la detección de la clase 'No paga a tiempo', y el modelo seleccionado se persiste para reutilizarlo sin repetir el entrenamiento.
+
+A partir de ese artefacto, el proyecto pasa de un experimento de Machine Learning a un proceso de inferencia: deployment aplica el pipeline y el modelo a nuevos registros, FastAPI expone la predicción mediante endpoints (contenerizados con Docker), el script de envío simula el ingreso de nuevos datos, y monitoring analiza las predicciones y posibles cambios en las distribuciones. Finalmente, Streamlit reúne los resultados del monitoreo en una interfaz visual.
+
+La solución no se limita al entrenamiento de un modelo: integra preparación, análisis, modelado, reutilización, servicio, monitoreo y visualización, manteniendo una relación explícita entre los archivos que producen y consumen cada etapa.
+
+---
